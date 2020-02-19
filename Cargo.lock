@@ -39,6 +39,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "doc-comment"
+version = "0.3.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "923dea538cea0aa3025e8685b20d6ee21ef99c4f77e954a30febbaac5ec73a97"
+
+[[package]]
 name = "either"
 version = "1.5.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -57,6 +63,7 @@ dependencies = [
  "serde",
  "serde_bytes",
  "serde_derive",
+ "snafu",
 ]
 
 [[package]]
@@ -222,6 +229,27 @@ name = "serde_derive"
 version = "1.0.104"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "128f9e303a5a29922045a830221b8f78ec74a5f544944f3d5984f8ec3895ef64"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
+]
+
+[[package]]
+name = "snafu"
+version = "0.6.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "546db9181bce2aa22ed883c33d65603b76335b4c2533a98289f54265043de7a1"
+dependencies = [
+ "doc-comment",
+ "snafu-derive",
+]
+
+[[package]]
+name = "snafu-derive"
+version = "0.6.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bdc75da2e0323f297402fd9c8fdba709bb04e4c627cbe31d19a2c91fc8d9f0e2"
 dependencies = [
  "proc-macro2",
  "quote",
