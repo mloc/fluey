@@ -1,6 +1,6 @@
 use std::io;
 use std::io::Write;
-use std::net::TcpStream;
+use std::net::{TcpStream, ToSocketAddrs};
 use std::sync::mpsc;
 use std::thread;
 use std::time::Duration;
@@ -32,17 +32,17 @@ fn mpsc_recv_many<V>(recv: &mpsc::Receiver<V>, n: usize) -> Option<Vec<V>> {
     Some(entries)
 }
 
-pub struct Forwarder {
+pub struct Forwarder<A: ToSocketAddrs + Clone> {
     tag: String,
-    host: String,
+    host: A,
     recv: mpsc::Receiver<fluentd::Entry>,
     done_send: mpsc::Sender<()>,
 }
 
-impl Forwarder {
+impl<A: ToSocketAddrs + Clone> Forwarder<A> {
     pub fn new(
         tag: String,
-        host: String,
+        host: A,
         recv: mpsc::Receiver<fluentd::Entry>,
         done_send: mpsc::Sender<()>,
     ) -> Self {
@@ -102,13 +102,13 @@ impl Forwarder {
     }
 }
 
-struct Connection {
-    host: String,
+struct Connection<A: ToSocketAddrs> {
+    host: A,
     stream: Option<TcpStream>,
 }
 
-impl<'a> Connection {
-    fn new(host: String) -> Self {
+impl<'a, A: ToSocketAddrs> Connection<A> {
+    fn new(host: A) -> Self {
         Self {
             host: host,
             stream: None,
@@ -123,15 +123,17 @@ impl<'a> Connection {
             let h = &self.host;
             let s = self.stream.get_or_insert_with(|| Self::connect_stream(h));
 
-            if let Ok(()) = f(s) {
+            if f(s).is_ok() {
                 return;
             }
 
+            // TODO backoff
+            thread::sleep(Duration::from_millis(1000));
             self.stream = None
         }
     }
 
-    fn connect_stream(host: &str) -> TcpStream {
+    fn connect_stream(host: &A) -> TcpStream {
         loop {
             let res: Result<TcpStream, io::Error> = (|| {
                 let ns = TcpStream::connect(host)?;
